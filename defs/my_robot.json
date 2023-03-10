@@ -1,0 +1,63 @@
+{
+  "name": "Robot",
+  "type": "dynamic",
+  "description": "Robot agent to solve a maze using three sensors.",
+  "shape": [
+    {
+      "x": -5,
+      "y": 5
+    },
+    {
+      "x": 5,
+      "y": 5
+    },
+    {
+      "x": 5,
+      "y": -5
+    },
+    {
+      "x": -5,
+      "y": -5
+    }
+  ],
+  "friction": {
+    "collision": 5,
+    "linear": 40,
+    "rotational": 600
+  },
+  "sensors": [
+    {
+      "type": "range",
+      "location": {
+        "x": 5,
+        "y": 0
+      },
+      "direction": 0
+    },
+    {
+      "type": "range",
+      "location": {
+        "x": 0,
+        "y": 5
+      },
+      "direction": 1.57
+    },
+    { 
+    "type": "range",
+    "location": { "x": -5, "y": 0 },
+    "direction": -3.14
+    },
+
+    {
+      "type": "range",
+      "location": {
+        "x": 0,
+        "y": -5
+      },
+      "direction": -1.57
+    }
+  ],
+  "mass": 1,
+  "controller": "lib/my_robot.so"
+}
+
