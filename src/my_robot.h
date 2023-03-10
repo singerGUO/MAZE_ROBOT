@@ -30,10 +30,10 @@ namespace {
         void entry(const Event &e) {
             std:: cout << "Entering Adjusting angle to find the object\n";
         }
-        
+        // acquire a lock that
         void during(){
-			if (lock == 0) {
-				lock = 1;
+			if (flag == 0) {
+				flag = 1;
 				angle_cnt_target += 1.5708;
 			}
 			if (angle() <= angle_cnt_target) {
@@ -48,7 +48,7 @@ namespace {
 				{
 					teleport(pos_agent.x, pos_agent.y, angle_cnt_target);
 				}
-				lock = 0;
+				flag = 0;
 				if (sensor_reflection_type(0) == "Target"){
 					angle_cnt_target = 0;
 					emit(Event("tick"));
@@ -57,18 +57,18 @@ namespace {
 		}  
         void exit(const Event &e) {}
        	private:
-		int lock = 0;
+		int flag = 0;
     };
-
+	// this is the state to moving forward and in the meanwhile detecting target and wall
 	class MovingForward : public State, public AgentInterface {
 	public:
 
-		//! get the  current angle of the agent 
+		// get the  current angle of the agent 
 		void entry(const Event& e) {
 			angle_cnt = angle();
 		}
 
-		//! moves agent with constant velocity until it crash or any of sensor find the target
+		// moves agent with constant velocity until it crash or any of sensor find the target
 		void during() {
 			std::cout << "head sensor dist:" << sensor_value(0) << std::endl;
 			track_velocity(20, 0);
@@ -77,15 +77,15 @@ namespace {
 					emit(Event("goal"));
 				}
                 std::cout << "movingforward to rotate state change since crash" << std::endl;
-				
 				emit(Event("tick"));
-            }
-			else if(sensor_reflection_type(0) == "Target" ||sensor_reflection_type(1) == "Target"||sensor_reflection_type(2) == "Target"|| sensor_reflection_type(3) == "Target"){ //Check all sensors find the target
+            }//Check all sensors find the target
+			else if(sensor_reflection_type(0) == "Target" ||sensor_reflection_type(1) == "Target"||sensor_reflection_type(2) == "Target"|| sensor_reflection_type(3) == "Target"){ 
                 track_velocity(0,0);
+				//if it is pointed to target
 				if (sensor_reflection_type(0) == "Target"){
 					track_velocity(20, 0);
-
 				}else{
+					//it is not adjusted to target yet continue rotate
 					std::cout << "movingforward to rotate state change since adjust angle to target" << std::endl;
 					emit(Event("adjust"));
 				}
@@ -97,19 +97,19 @@ namespace {
 		void exit(const Event& e) {}
 	}; 
 
-	//This state is used for rotating while wandering
+	//This state is used for rotating while wandering, before crashing move to open space compared with the left and right sensors
 	class Rotating : public State, public AgentInterface {
 	public:
 		void entry(const Event& e) { }
 
 		void during() {
-			if (lock == 0) {
-				lock = 1;
+			if (flag == 0) {
+				flag = 1;
 				if (sensor_value(1) > sensor_value(3)) {
 					dir = 0;
 					angle_cnt += 1.5708;
 				}
-				else if (sensor_value(3) >= sensor_value(1)) {
+				else {
 					dir = 1;
 					angle_cnt -= 1.5708;
 				}
@@ -127,7 +127,7 @@ namespace {
 					teleport(pos.x, pos.y, angle_cnt);
 				}
 				std::cout << "rotate to movingforward state change" << std::endl;
-				lock = 0;
+				flag = 0;
 				emit(Event("tick"));
 			}
 
@@ -136,9 +136,9 @@ namespace {
 
 	private:
 
-		int lock = 0, dir = 0;
+		int flag = 0, dir = 0;
 	};
-
+	// Robot state machine
 	class RobotController : public StateMachine, public AgentInterface {
 
 	public:
